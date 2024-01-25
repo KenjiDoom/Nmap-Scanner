@@ -5,11 +5,14 @@
 
 from pathlib import Path
 from tkinter import *
-from tkinter import simpledialog
+from tkinter import simpledialog, Entry, END
 import nmap
 
 OUTPUT_PATH = Path(__file__).parent
-ASSETS_PATH = OUTPUT_PATH / Path(r"/home/kenji/Videos/build/assets/frame0")
+# Possilble fixes to our next blog.
+# Change this path to your own
+# Prompt the user for root, prior to running the command.
+ASSETS_PATH = OUTPUT_PATH / Path(r"/home/kenji/Desktop/Nmap-Scanner-figma/build/assets/frame0")
 
 
 def relative_to_assets(path: str) -> Path:
@@ -155,31 +158,37 @@ def dialog_op():
 
 def scanner(target, port_number, custom_arguments=None):
     
-    # Determine if an argument was specified or not
     if custom_arguments == None:
+				# If custon arguemnts were specified then ignore and run the normal nmap flags
         options = '-sV -O '
     elif custom_arguments:
-         # Display the custom arguments? within the json
+         # If custom arguemnts ARE specified add them next to the default nmap flags
         options = '-sV -O ' + custom_arguments
-    
+        
     nmap_scanner = nmap.PortScanner()
     results = nmap_scanner.scan(target, str(port_number), arguments=options)
     data = results['scan'][str(target)]['tcp']
-    
+
     for port_number in data:
         try:
-            product = results['scan'][str(target)]['tcp'][port_number]['product']
-            version = results['scan'][str(target)]['tcp'][port_number]['version']
-            OS = results['scan'][str(target)]['tcp'][port_number]['cpe']
-            script_results = results['scan'][str(target)]['tcp'][port_number]['script']
+            # Fixed this
+            port_status = data[port_number]['state']
+            product = data[port_number]['product']
+            version = data[port_number]['version']
+            OS = data[port_number]['cpe']
+            script_results = data[port_number]['script']
             
-            entry_3.insert(END, str(port_number) + ': ' + results['scan'][str(target)]['tcp'][port_number]['state'] + ' ' + product + ' ' + version + ' ' + OS + '\n')
+            # Fixed this
+            entry_3.insert(END, str(port_number) + ': ' + port_status + ' ' + product + ' ' + version + ' ' + OS + '\n')
+            print(str(port_number) + ': ' + port_status + ' ' + product + ' ' + version + ' ' + OS)
             
             for key in script_results.keys():
+                # This will only work with scripting engine.
                 entry_3.insert(END, key + ": " + script_results[key])
-        except KeyError:
+                print(key + script_results[key])
+        
+        except KeyError as e:
             pass
-
 
 window.resizable(False, False)
 window.mainloop()
