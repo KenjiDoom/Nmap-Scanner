@@ -157,38 +157,36 @@ def dialog_op():
     scanner(target=entry_1.get(), port_number=entry_2.get(), custom_arguments=args)
 
 def scanner(target, port_number, custom_arguments=None):
-    
     if custom_arguments == None:
-				# If custon arguemnts were specified then ignore and run the normal nmap flags
         options = '-sV -O '
     elif custom_arguments:
-         # If custom arguemnts ARE specified add them next to the default nmap flags
         options = '-sV -O ' + custom_arguments
-        
+
     nmap_scanner = nmap.PortScanner()
     results = nmap_scanner.scan(target, str(port_number), arguments=options)
     data = results['scan'][str(target)]['tcp']
 
     for port_number in data:
         try:
-            # Fixed this
             port_status = data[port_number]['state']
             product = data[port_number]['product']
             version = data[port_number]['version']
             OS = data[port_number]['cpe']
             script_results = data[port_number]['script']
             
-            # Fixed this
             entry_3.insert(END, str(port_number) + ': ' + port_status + ' ' + product + ' ' + version + ' ' + OS + '\n')
-            print(str(port_number) + ': ' + port_status + ' ' + product + ' ' + version + ' ' + OS)
-            
+                        
             for key in script_results.keys():
                 # This will only work with scripting engine.
                 entry_3.insert(END, key + ": " + script_results[key])
                 print(key + script_results[key])
         
         except KeyError as e:
-            pass
+            if str(e) == 'script':
+                pass
+            else:
+                entry_3.insert(END, str(port_number) + ': ' + port_status + ' ' + product + ' ' + version + ' ' + OS + '\n')
+
 
 window.resizable(False, False)
 window.mainloop()
